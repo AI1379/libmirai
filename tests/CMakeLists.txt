@@ -6,7 +6,9 @@ include_directories(${gtest_SOURCE_DIR}/include)
 include_directories(${MIRAI_INCLUDE_DIR})
 
 set(MIRAI_TESTS_FILES
-        ${MIRAI_TESTS_DIR}/utils/encode-test.cpp)
+        ${MIRAI_TESTS_DIR}/utils/encode-test.cpp
+        ${MIRAI_TESTS_DIR}/crypto/tea-test.cpp
+        )
 
 set(MIRAI_TESTS_FILES ${MIRAI_TESTS_FILES} PARENT_SCOPE)
 

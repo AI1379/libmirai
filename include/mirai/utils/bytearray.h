@@ -6,7 +6,6 @@
 #define MIRAI_INCLUDE_MIRAI_UTILS_BYTEARRAY_H_
 
 #include "mirai/defs/types.h"
-#include "mirai/utils/encode.h"
 
 #include <algorithm>
 #include <string>
@@ -19,6 +18,21 @@ using ByteArrayView = std::basic_string_view<mirai::byte>;
 
 inline ByteArray toByteArray(const std::string &str) {
   return ByteArray((byte *) (str.data()), str.size());
+}
+
+inline uint32_t readUInt32BE(const ByteArray &buf, std::size_t idx) {
+  uint32_t res = 0;
+  for (size_t i = 0; i < 4; i++) {
+    res = (res << 8) | buf[i + idx];
+  }
+  return res;
+}
+
+inline void writeUInt32BE(ByteArray &buf, std::size_t idx, uint32_t val) {
+  for (int i = 0; i < 4; i++) {
+    buf[idx + i] = (val >> 24);
+    val <<= 8;
+  }
 }
 
 }
