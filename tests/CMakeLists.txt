@@ -8,6 +8,8 @@ include_directories(${MIRAI_INCLUDE_DIR})
 set(MIRAI_TESTS_FILES
         ${MIRAI_TESTS_DIR}/utils/encode-test.cpp
         ${MIRAI_TESTS_DIR}/crypto/tea-test.cpp
+        ${MIRAI_TESTS_DIR}/crypto/hash-test.cpp
+        ${MIRAI_TESTS_DIR}/crypto/ecdh-test.cpp
         )
 
 set(MIRAI_TESTS_FILES ${MIRAI_TESTS_FILES} PARENT_SCOPE)
@@ -17,6 +19,4 @@ message("SOURCE FILES: ${MIRAI_SOURCE_FILES}")
 
 add_executable(UnitTestsRun ${MIRAI_TESTS_FILES})
 
-add_library(MiraiLib ${MIRAI_SOURCE_FILES})
-
-target_link_libraries(UnitTestsRun MiraiLib gtest gtest_main)
+target_link_libraries(UnitTestsRun gtest gtest_main mirai)
