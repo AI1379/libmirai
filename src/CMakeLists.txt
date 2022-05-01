@@ -2,6 +2,7 @@ include_directories(${MIRAI_INCLUDE_DIR})
 
 set(MIRAI_SOURCE_FILES
         ${MIRAI_SOURCE_DIR}/utils/encode.cpp
+        ${MIRAI_SOURCE_DIR}/protocol/tlv.cpp
         ${MIRAI_SOURCE_DIR}/crypto/ecdh.cpp)
 
 set(MIRAI_SOURCE_FILES ${MIRAI_SOURCE_FILES} PARENT_SCOPE)

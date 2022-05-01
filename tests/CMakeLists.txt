@@ -10,6 +10,8 @@ set(MIRAI_TESTS_FILES
         ${MIRAI_TESTS_DIR}/crypto/tea-test.cpp
         ${MIRAI_TESTS_DIR}/crypto/hash-test.cpp
         ${MIRAI_TESTS_DIR}/crypto/ecdh-test.cpp
+        ${MIRAI_TESTS_DIR}/protocol/tlv-test.cpp
+        ${MIRAI_TESTS_DIR}/protocol/jce-test.cpp
         )
 
 set(MIRAI_TESTS_FILES ${MIRAI_TESTS_FILES} PARENT_SCOPE)
