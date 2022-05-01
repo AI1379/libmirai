@@ -1,0 +1,2 @@
+/bin/x86_64-linux-gnu-ar qc libmirai.a CMakeFiles/mirai.dir/utils/encode.cpp.o CMakeFiles/mirai.dir/utils/tlv.cpp.o CMakeFiles/mirai.dir/crypto/ecdh.cpp.o
+/bin/x86_64-linux-gnu-ranlib libmirai.a

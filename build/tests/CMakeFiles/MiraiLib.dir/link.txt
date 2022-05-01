@@ -1,0 +1,2 @@
+/bin/x86_64-linux-gnu-ar qc libMiraiLib.a CMakeFiles/MiraiLib.dir/__/src/utils/encode.cpp.o
+/bin/x86_64-linux-gnu-ranlib libMiraiLib.a
