@@ -8,10 +8,26 @@
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
+#include <iostream>
 
 namespace mirai {
 
 using byte = std::uint8_t;
+
+inline uint16_t reverseU16(uint16_t x) {
+  return (x >> 8) | (x << 8);
+}
+inline uint32_t reverseU32(uint32_t x) {
+  return ((x >> 24) & 0xff) |
+      ((x << 8) & 0xff0000) |
+      ((x >> 8) & 0xff00) |
+      ((x << 24) & 0xff000000);
+}
+inline uint64_t reverseU64(uint64_t x) {
+  x = ((x << 8) & 0xFF00FF00FF00FF00ULL) | ((x >> 8) & 0x00FF00FF00FF00FFULL);
+  x = ((x << 16) & 0xFFFF0000FFFF0000ULL) | ((x >> 16) & 0x0000FFFF0000FFFFULL);
+  return (x << 32) | (x >> 32);
+}
 
 }
 

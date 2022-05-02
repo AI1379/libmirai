@@ -13,7 +13,7 @@
 namespace mirai::utils {
 // TODO: 写一个自有的ByteArray类
 using ByteArray = std::basic_string<mirai::byte>;
-using ByteArrayStream = std::basic_stringstream<mirai::byte>;
+//using ByteArrayStream = std::basic_stringstream<mirai::byte>;
 using ByteArrayView = std::basic_string_view<mirai::byte>;
 
 inline ByteArray toByteArray(const std::string &str) {
@@ -34,6 +34,8 @@ inline void writeUInt32BE(ByteArray &buf, std::size_t idx, uint32_t val) {
     val <<= 8;
   }
 }
+
+class ByteStream;
 
 }
 

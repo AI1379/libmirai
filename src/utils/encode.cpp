@@ -3,6 +3,7 @@
 //
 
 #include "mirai/defs/types.h"
+#include "mirai/utils/bytearray.h"
 #include "mirai/utils/encode.h"
 
 #include <cstdint>

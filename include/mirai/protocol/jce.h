@@ -38,5 +38,4 @@ struct JceHead{
 
 JceHead readHead(const utils::ByteArray &buf);
 
-
 }
