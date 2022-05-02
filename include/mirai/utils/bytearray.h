@@ -13,7 +13,7 @@
 namespace mirai::utils {
 // TODO: 写一个自有的ByteArray类
 using ByteArray = std::basic_string<mirai::byte>;
-//using ByteArrayStream = std::basic_stringstream<mirai::byte>;
+using ByteStream = std::basic_stringstream<mirai::byte>;
 using ByteArrayView = std::basic_string_view<mirai::byte>;
 
 inline ByteArray toByteArray(const std::string &str) {
@@ -35,7 +35,27 @@ inline void writeUInt32BE(ByteArray &buf, std::size_t idx, uint32_t val) {
   }
 }
 
-class ByteStream;
+// overload operator <<
+ByteStream &operator<<(ByteStream &bs, const std::string &a);
+ByteStream &operator<<(ByteStream &bs, const char *c);
+ByteStream &operator<<(ByteStream &bs, const byte &a);
+ByteStream &operator<<(ByteStream &bs, const uint16_t &a);
+ByteStream &operator<<(ByteStream &bs, const uint32_t &a);
+ByteStream &operator<<(ByteStream &bs, const uint64_t &a);
+ByteStream &operator<<(ByteStream &bs, const int8_t &a);
+ByteStream &operator<<(ByteStream &bs, const int16_t &a);
+ByteStream &operator<<(ByteStream &bs, const int32_t &a);
+ByteStream &operator<<(ByteStream &bs, const int64_t &a);
+ByteStream &operator<<(ByteStream &bs, const ByteArray &buf);
+
+// overload operator >>
+ByteStream &operator>>(ByteStream &bs, byte &a);
+ByteStream &operator>>(ByteStream &bs, uint16_t &a);
+ByteStream &operator>>(ByteStream &bs, uint32_t &a);
+ByteStream &operator>>(ByteStream &bs, uint64_t &a);
+ByteStream &operator>>(ByteStream &bs, int16_t &a);
+ByteStream &operator>>(ByteStream &bs, int32_t &a);
+ByteStream &operator>>(ByteStream &bs, int64_t &a);
 
 }
 
