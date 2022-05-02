@@ -5,7 +5,7 @@
 
 namespace mirai::protocol::Jce {
 
-enum JceType {
+enum Type {
   TYPE_INT8 = 0,
   TYPE_INT16 = 1,
   TYPE_INT32 = 2,
@@ -22,7 +22,7 @@ enum JceType {
   TYPE_SIMPLE_LIST = 13,
 };
 
-enum JceTag {
+enum Tag {
   TAG_MAP_K = 0,
   TAG_MAP_V = 1,
   TAG_LIST_E = 0,
@@ -31,8 +31,12 @@ enum JceTag {
   TAG_STRUCT_END = 0,
 };
 
-std::pair<byte,byte> readHead(const utils::ByteArray &buf);
-utils::ByteArray readBody(const utils::ByteArray &buf,JceType type);
+struct JceHead{
+  Type type;
+  Tag tag;
+};
+
+JceHead readHead(const utils::ByteArray &buf);
 
 
 }

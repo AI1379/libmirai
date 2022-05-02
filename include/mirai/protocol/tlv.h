@@ -4,28 +4,28 @@
 
 namespace mirai::utils {
 
-class Write
+class Writer
 {
 private:
     /* data */
 public:
-    Write(/* args */);
-    ~Write();
+    Writer(/* args */);
+    ~Writer();
 
-    Write& writeU8();
-    Write& writeU16();
-    Write& write32();
-    Write& writeU32();
-    Write& writeU64();
-    Write& writeBytes();
+    Writer& writeU8();
+    Writer& writeU16();
+    Writer& write32();
+    Writer& writeU32();
+    Writer& writeU64();
+    Writer& writeBytes();
     
 };
 
-Write::Write(/* args */)
+Writer::Writer(/* args */)
 {
 }
 
-Write::~Write()
+Writer::~Writer()
 {
 }
 

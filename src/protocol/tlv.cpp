@@ -1,16 +1,16 @@
-#include "mirai/utils/tlv.h"
+#include "mirai/protocol/tlv.h"
 #include <fstream>
 
 namespace mirai::utils {
 
-Write& Write::writeU8() {
+Writer &Writer::writeU8() {
 
-    return *this;
+  return *this;
 }
 
-Write& Write::writeU16() {
+Writer &Writer::writeU16() {
 
-    return *this;
+  return *this;
 }
 
 }
