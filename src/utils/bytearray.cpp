@@ -2,7 +2,9 @@
 
 #include <sstream>
 
-namespace mirai::utils {
+namespace mirai {
+using utils::ByteStream;
+using utils::ByteArray;
 // overload operator <<
 ByteStream &operator<<(ByteStream &bs, const std::string &a) {
   for (std::string::value_type c : a) {
@@ -22,7 +24,7 @@ ByteStream &operator<<(ByteStream &bs, const byte &a) {
 }
 ByteStream &operator<<(ByteStream &bs, const uint16_t &a) {
   auto x = reverseU16(a);
-  bs.write(reinterpret_cast<const mirai::byte *>(&x), 4);
+  bs.write(reinterpret_cast<const mirai::byte *>(&x), 2);
   return bs;
 }
 ByteStream &operator<<(ByteStream &bs, const uint32_t &a) {
