@@ -97,6 +97,9 @@ ByteStream &operator>>(ByteStream &bs, uint64_t &a) {
       (static_cast<uint64_t>(bs.get()));
   return bs;
 }
+ByteStream &operator>>(ByteStream &bs, int8_t &a) {
+  return bs >> (uint8_t &) (a);
+}
 ByteStream &operator>>(ByteStream &bs, int16_t &a) {
   return bs >> (uint16_t &) (a);
 };
@@ -107,9 +110,16 @@ ByteStream &operator>>(ByteStream &bs, int64_t &a) {
   return bs >> (uint64_t &) (a);
 }
 
+ByteArray utils::readLen(ByteStream &bs, std::size_t len) {
+  byte *buf = new byte[len];
+  bs.read(buf, len);
+  return ByteArray(buf, len);
 }
 
-std::size_t ByteArrayHashFunc(const mirai::utils::ByteArray &buf){
+std::size_t utils::ByteArrayHashFunc(const mirai::utils::ByteArray &buf) {
   // TODO: rewrite ByteArrayHashFunc
   return std::hash<std::string>{}(mirai::utils::base64Encode(buf));
 }
+
+}
+

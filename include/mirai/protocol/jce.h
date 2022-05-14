@@ -2,6 +2,7 @@
 #include "mirai/defs/macros.h"
 #include "mirai/utils/bytearray.h"
 
+#include <memory>
 #include <utility>
 #include <memory>
 
@@ -38,6 +39,7 @@ struct JceHead {
   std::uint8_t tag;
 };
 
+// 所有Jce元素的基类
 struct JceField {
   virtual const JceType getType() = 0;
 };
@@ -69,8 +71,12 @@ using ListFieldPtr = std::shared_ptr<ListField>;
 using MapFieldPtr = std::shared_ptr<MapField>;
 using StructFieldPtr = std::shared_ptr<StructField>;
 
+// 封装了一个类保存JceBody
 class JceBody {
  public:
+  JceBody() = default;
+  JceBody(const JceBody &rhs) { this->field_ptr_ = rhs.field_ptr_; }
+  explicit JceBody(FieldPtr field_ptr) : field_ptr_(std::move(field_ptr)) {}
   const JceType getType() const { return this->field_ptr_->getType(); }
 
   ZeroFieldPtr getZeroFieldPtr() const { return std::static_pointer_cast<ZeroField>(this->field_ptr_); }
@@ -93,7 +99,7 @@ class JceBody {
 bool operator==(const JceBody &lhs, const JceBody &rhs);
 std::size_t JceBodyHashFunc(const JceBody &x);
 
-struct JceElement{
+struct JceElement {
   JceHead head;
   JceBody body;
 };
@@ -111,12 +117,15 @@ struct hash<mirai::protocol::Jce::JceBody> {
 
 namespace mirai::protocol::Jce {
 
+// 定义Jce里面List和Map的底层容器
 using ListType = std::vector<JceBody>;
 using MapType = std::unordered_map<JceBody, JceBody>;
 
 }
 
 namespace std {
+
+// 定义hash函数使得可以使用unordered_map
 template<>
 struct hash<mirai::protocol::Jce::MapType> {
   std::size_t operator()(const mirai::protocol::Jce::MapType &x) {
@@ -140,8 +149,8 @@ struct hash<mirai::protocol::Jce::MapType> {
   }
 };
 template<>
-struct hash<mirai::protocol::Jce::ListType>{
-  std::size_t operator()(const mirai::protocol::Jce::ListType &x){
+struct hash<mirai::protocol::Jce::ListType> {
+  std::size_t operator()(const mirai::protocol::Jce::ListType &x) {
     // TODO: rewrite this hash function
     auto list_size = sizeof(x);
     using ResType = std::size_t;
@@ -166,6 +175,7 @@ struct hash<mirai::protocol::Jce::ListType>{
 
 namespace mirai::protocol::Jce {
 
+// Jce的元素的定义
 struct ZeroField : public JceField {
   const JceType getType() override { return TYPE_ZERO; }
   static const constexpr std::int8_t value = 0;
@@ -226,18 +236,76 @@ struct StructField : public JceField {
   JceBody value[256];
 };
 
+struct StructEndField : public JceField {
+  const JceType getType() override { return TYPE_STRUCT_END; }
+};
+
+static const auto kStructEndSymbol = JceBody(std::make_shared<StructEndField>());
+
+JceBody createZeroField() {
+  return JceBody(std::static_pointer_cast<JceField>(std::make_shared<ZeroField>()));
+}
+
+JceBody createInt8Field(std::int8_t x) {
+  auto ptr = std::make_shared<Int8Field>();
+  ptr->value = x;
+  return JceBody(ptr);
+}
+
+JceBody createInt16Field(std::int16_t x) {
+  auto ptr = std::make_shared<Int16Field>();
+  ptr->value = x;
+  return JceBody(ptr);
+}
+
+JceBody createInt32Field(std::int32_t x) {
+  auto ptr = std::make_shared<Int32Field>();
+  ptr->value = x;
+  return JceBody(ptr);
+}
+
+JceBody createInt64Field(std::int64_t x) {
+  auto ptr = std::make_shared<Int64Field>();
+  ptr->value = x;
+  return JceBody(ptr);
+}
+
+JceBody createFloatField(float x) {
+  auto ptr = std::make_shared<FloatField>();
+  ptr->value = x;
+  return JceBody(ptr);
+}
+
+JceBody createDoubleField(double x) {
+  auto ptr = std::make_shared<DoubleField>();
+  ptr->value = x;
+  return JceBody(ptr);
+}
+
+JceBody createStringField(const std::string &str) {
+  auto ptr = std::make_shared<StringField>();
+  ptr->value = str;
+  return JceBody(ptr);
+}
+
+JceBody createSimpleListField(const utils::ByteArray &buf) {
+  auto ptr = std::make_shared<SimpleListField>();
+  ptr->value = buf;
+  return JceBody(ptr);
+}
+
 JceHead readHead(utils::ByteStream &bs);
-JceBody readBody(utils::ByteStream &bs);
-StructField readStruct(utils::ByteStream &bs);
+JceBody readBody(utils::ByteStream &bs, JceType type);
+JceBody readStruct(utils::ByteStream &bs);
 JceElement readElement(utils::ByteStream &bs);
 StructField decode(utils::ByteStream &bs);
 
 }
 
-namespace std{
+namespace std {
 template<>
-struct hash<mirai::protocol::Jce::StructField>{
-  std::size_t operator()(const mirai::protocol::Jce::StructField &x){
+struct hash<mirai::protocol::Jce::StructField> {
+  std::size_t operator()(const mirai::protocol::Jce::StructField &x) {
     // TODO: rewrite this hash function
     auto list_size = sizeof(x);
     using ResType = std::size_t;

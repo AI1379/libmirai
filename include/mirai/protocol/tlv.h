@@ -34,4 +34,4 @@ Writer::~Writer()
 }
 
 
-#endif MIRAI_INCLUDE_MIRAI_UTILS_TLV_H_
+#endif // MIRAI_INCLUDE_MIRAI_UTILS_TLV_H_

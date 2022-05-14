@@ -55,4 +55,76 @@ JceHead readHead(utils::ByteStream &bs) {
   return res;
 }
 
+JceBody readBody(utils::ByteStream &bs, JceType type) {
+  std::size_t len;
+  using mirai::operator>>;
+  switch (type) {
+    case TYPE_ZERO:return createZeroField();
+    case TYPE_INT8: {
+      int8_t int8Res;
+      bs >> (int8_t &) (int8Res);
+      return createInt8Field(int8Res);
+    }
+    case TYPE_INT16: {
+      int16_t int16Res;
+      bs >> (int16_t &) (int16Res);
+      return createInt16Field(int16Res);
+    }
+    case TYPE_INT32: {
+      int32_t int32Res;
+      bs >> (int32_t &) (int32Res);
+      return createInt32Field(int32Res);
+    }
+    case TYPE_INT64: {
+      int64_t int64Res;
+      bs >> (int64_t &) (int64Res);
+      return createInt64Field(int64Res);
+    }
+    case TYPE_FLOAT: {
+      uint32_t floatRes;
+      bs >> (uint32_t &) (floatRes);
+      return createFloatField(*((float *) (&floatRes)));
+    }
+    case TYPE_DOUBLE: {
+      uint64_t doubleRes;
+      bs >> (uint64_t &) (doubleRes);
+      return createDoubleField(*((double *) (&doubleRes)));
+    }
+    case TYPE_STRING1:
+    case TYPE_STRING4: {
+      if (type == TYPE_STRING1)bs >> (uint8_t &) (len);
+      else bs >> (uint32_t &) (len);
+      return createStringField(utils::toString(utils::readLen(bs, len)));
+    }
+    case TYPE_SIMPLE_LIST: {
+      readHead(bs);
+      // TODO: confirm the size of SimpleList
+      len = readElement(bs).body.getInt32FieldPtr()->value;
+      return createSimpleListField(utils::readLen(bs, len));
+    }
+    case TYPE_MAP: {
+      len = readElement(bs).body.getInt32FieldPtr()->value;
+      MapFieldPtr res = std::make_shared<MapField>();
+      while (len--) {
+        res->value[readElement(bs).body] = readElement(bs).body;
+      }
+      return JceBody(res);
+    }
+    case TYPE_LIST: {
+      len = readElement(bs).body.getInt32FieldPtr()->value;
+      ListFieldPtr res = std::make_shared<ListField>();
+      while (len--) {
+        res->value.push_back(readElement(bs).body);
+      }
+      return JceBody(res);
+    }
+    case TYPE_STRUCT: {
+      return readStruct(bs);
+    }
+    case TYPE_STRUCT_END: {
+      return kStructEndSymbol;
+    }
+  }
+}
+
 }

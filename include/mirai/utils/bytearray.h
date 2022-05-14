@@ -39,6 +39,8 @@ inline void writeUInt32BE(ByteArray &buf, std::size_t idx, uint32_t val) {
   }
 }
 
+ByteArray readLen(ByteStream &bs, std::size_t len);
+
 std::size_t ByteArrayHashFunc(const ByteArray &buf);
 }
 
@@ -62,6 +64,7 @@ utils::ByteStream &operator>>(utils::ByteStream &bs, byte &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, uint16_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, uint32_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, uint64_t &a);
+utils::ByteStream &operator>>(utils::ByteStream &bs, int8_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int16_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int32_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int64_t &a);

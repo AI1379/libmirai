@@ -43,6 +43,18 @@ TEST(MiraiUtilTest, ByteStreamInputTest1) {
   ASSERT_EQ(res, 0x41);
 }
 
+TEST(MiraiUtilTest, ByteStreamInputTest2) {
+  ByteStream bs;
+  mirai::utils::ByteArray inp = mirai::utils::toByteArray("ABCDEFG");
+  bs.str(inp);
+  mirai::utils::ByteArray res = mirai::utils::readLen(bs, 2);
+  ASSERT_EQ(mirai::utils::toString(res), "AB");
+  res = mirai::utils::readLen(bs, 3);
+  ASSERT_EQ(mirai::utils::toString(res), "CDE");
+  mirai::utils::ByteArray exp_res = mirai::utils::toByteArray("");
+  ASSERT_EQ(mirai::utils::readLen(bs, 0), exp_res);
+}
+
 TEST(MiraiUtilTest, ByteStreamTest1) {
   ByteStream bs;
 //  mirai::utils::ByteArray inp = mirai::utils::toByteArray("ABCD");
