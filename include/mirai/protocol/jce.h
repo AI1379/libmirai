@@ -1,7 +1,9 @@
 #include "mirai/defs/types.h"
+#include "mirai/defs/macros.h"
 #include "mirai/utils/bytearray.h"
 
 #include <utility>
+#include <memory>
 
 namespace mirai::protocol::Jce {
 
@@ -16,7 +18,7 @@ enum JceType {
   TYPE_STRING4 = 7,
   TYPE_MAP = 8,
   TYPE_LIST = 9,
-  TYPE_STRUCT_BEGIN = 10,
+  TYPE_STRUCT = 10,
   TYPE_STRUCT_END = 11,
   TYPE_ZERO = 12,
   TYPE_SIMPLE_LIST = 13,
@@ -33,69 +35,227 @@ enum JceTag {
 
 struct JceHead {
   JceType type;
-  JceTag tag;
+  std::uint8_t tag;
 };
 
-template<JceType type>
-struct JceBody {};
-
-template<>
-struct JceBody<TYPE_ZERO> {
-  static constexpr int8_t value = 0;
+struct JceField {
+  virtual const JceType getType() = 0;
 };
 
-template<>
-struct JceBody<TYPE_INT8> {
-  int8_t value;
+struct ZeroField;
+struct Int8Field;
+struct Int16Field;
+struct Int32Field;
+struct Int64Field;
+struct StringField;
+struct FloatField;
+struct DoubleField;
+struct SimpleListField;
+struct ListField;
+struct MapField;
+struct StructField;
+
+using FieldPtr = std::shared_ptr<JceField>;
+using ZeroFieldPtr = std::shared_ptr<ZeroField>;
+using Int8FieldPtr = std::shared_ptr<Int8Field>;
+using Int16FieldPtr = std::shared_ptr<Int16Field>;
+using Int32FieldPtr = std::shared_ptr<Int32Field>;
+using Int64FieldPtr = std::shared_ptr<Int64Field>;
+using StringFieldPtr = std::shared_ptr<StringField>;
+using FloatFieldPtr = std::shared_ptr<FloatField>;
+using DoubleFieldPtr = std::shared_ptr<DoubleField>;
+using SimpleListFieldPtr = std::shared_ptr<SimpleListField>;
+using ListFieldPtr = std::shared_ptr<ListField>;
+using MapFieldPtr = std::shared_ptr<MapField>;
+using StructFieldPtr = std::shared_ptr<StructField>;
+
+class JceBody {
+ public:
+  const JceType getType() const { return this->field_ptr_->getType(); }
+
+  ZeroFieldPtr getZeroFieldPtr() const { return std::static_pointer_cast<ZeroField>(this->field_ptr_); }
+  Int8FieldPtr getInt8FieldPtr() const { return std::static_pointer_cast<Int8Field>(this->field_ptr_); }
+  Int16FieldPtr getInt16FieldPtr() const { return std::static_pointer_cast<Int16Field>(this->field_ptr_); }
+  Int32FieldPtr getInt32FieldPtr() const { return std::static_pointer_cast<Int32Field>(this->field_ptr_); }
+  Int64FieldPtr getInt64FieldPtr() const { return std::static_pointer_cast<Int64Field>(this->field_ptr_); }
+  StringFieldPtr getStringFieldPtr() const { return std::static_pointer_cast<StringField>(this->field_ptr_); }
+  FloatFieldPtr getFloatFieldPtr() const { return std::static_pointer_cast<FloatField>(this->field_ptr_); }
+  DoubleFieldPtr getDoubleFieldPtr() const { return std::static_pointer_cast<DoubleField>(this->field_ptr_); }
+  SimpleListFieldPtr getSimpleListFieldPtr() const { return std::static_pointer_cast<SimpleListField>(this->field_ptr_); }
+  ListFieldPtr getListFieldPtr() const { return std::static_pointer_cast<ListField>(this->field_ptr_); }
+  MapFieldPtr getMapFieldPtr() const { return std::static_pointer_cast<MapField>(this->field_ptr_); }
+  StructFieldPtr getStructFieldPtr() const { return std::static_pointer_cast<StructField>(this->field_ptr_); }
+
+ private:
+  FieldPtr field_ptr_;
 };
 
-template<>
-struct JceBody<TYPE_INT16> {
-  int16_t value;
+bool operator==(const JceBody &lhs, const JceBody &rhs);
+std::size_t JceBodyHashFunc(const JceBody &x);
+
+struct JceElement{
+  JceHead head;
+  JceBody body;
 };
 
+}
+
+namespace std {
 template<>
-struct JceBody<TYPE_INT32> {
-  int32_t value;
+struct hash<mirai::protocol::Jce::JceBody> {
+  std::size_t operator()(const mirai::protocol::Jce::JceBody &x) const noexcept {
+    return mirai::protocol::Jce::JceBodyHashFunc(x);
+  }
+};
+}
+
+namespace mirai::protocol::Jce {
+
+using ListType = std::vector<JceBody>;
+using MapType = std::unordered_map<JceBody, JceBody>;
+
+}
+
+namespace std {
+template<>
+struct hash<mirai::protocol::Jce::MapType> {
+  std::size_t operator()(const mirai::protocol::Jce::MapType &x) {
+    auto map_size = sizeof(x);
+    using ResType = std::size_t;
+    ResType res = 0;
+    auto *ptr = (ResType *) (std::addressof(x));
+    ResType *const end = ptr + map_size / sizeof(ResType);
+    const uint32_t tail = map_size % sizeof(ResType);
+    const uint32_t shift = (sizeof(ResType) - sizeof(uint32_t)) << 3;
+    uint64_t seed = 131;
+    for (; ptr < end; ptr++)res = res * seed + (*ptr);
+    if (tail) {
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
+      res = res * seed + ((*ptr) & ((1ull << (tail << 3)) - 1));
+#elif BYTEORDER_ENDIAN == BYTEORDER_BIG_ENDIAN
+      res = res * seed+ ((*ptr) >> ((sizeof(uint64_t) - tail) << 3));
+#endif
+    }
+    return res;
+  }
+};
+template<>
+struct hash<mirai::protocol::Jce::ListType>{
+  std::size_t operator()(const mirai::protocol::Jce::ListType &x){
+    // TODO: rewrite this hash function
+    auto list_size = sizeof(x);
+    using ResType = std::size_t;
+    ResType res = 0;
+    auto *ptr = (ResType *) (std::addressof(x));
+    ResType *const end = ptr + list_size / sizeof(ResType);
+    const uint32_t tail = list_size % sizeof(ResType);
+    const uint32_t shift = (sizeof(ResType) - sizeof(uint32_t)) << 3;
+    uint64_t seed = 131;
+    for (; ptr < end; ptr++)res = res * seed + (*ptr);
+    if (tail) {
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
+      res = res * seed + ((*ptr) & ((1ull << (tail << 3)) - 1));
+#elif BYTEORDER_ENDIAN == BYTEORDER_BIG_ENDIAN
+      res = res * seed+ ((*ptr) >> ((sizeof(uint64_t) - tail) << 3));
+#endif
+    }
+    return res;
+  }
+};
+}
+
+namespace mirai::protocol::Jce {
+
+struct ZeroField : public JceField {
+  const JceType getType() override { return TYPE_ZERO; }
+  static const constexpr std::int8_t value = 0;
 };
 
-template<>
-struct JceBody<TYPE_INT64> {
-  int64_t value;
+struct Int8Field : public JceField {
+  const JceType getType() override { return TYPE_INT8; }
+  std::int8_t value = 0;
 };
 
-template<>
-struct JceBody<TYPE_FLOAT> {
-  float value;
+struct Int16Field : public JceField {
+  const JceType getType() override { return TYPE_INT16; }
+  std::int16_t value = 0;
 };
 
-template<>
-struct JceBody<TYPE_DOUBLE>{
-  double value;
+struct Int32Field : public JceField {
+  const JceType getType() override { return TYPE_INT32; }
+  std::int32_t value = 0;
 };
 
-template<>
-struct JceBody<TYPE_STRING1>{
+struct Int64Field : public JceField {
+  const JceType getType() override { return TYPE_INT64; }
+  std::int64_t value = 0;
+};
+
+struct StringField : public JceField {
+  const JceType getType() override { return TYPE_STRING1; }
   std::string value;
 };
 
-template<>
-struct JceBody<TYPE_STRING4>{
-  std::string value;
+struct FloatField : public JceField {
+  const JceType getType() override { return TYPE_FLOAT; }
+  float value = 0.0f;
 };
 
-template<>
-struct JceBody<TYPE_SIMPLE_LIST>{
-  utils::ByteArray value;
+struct DoubleField : public JceField {
+  const JceType getType() override { return TYPE_DOUBLE; }
+  double value = 0.0f;
 };
 
-// TODO: std::variant
-template<>
-struct JceBody<TYPE_LIST>{
+struct SimpleListField : public JceField {
+  const JceType getType() override { return TYPE_SIMPLE_LIST; }
+  mirai::utils::ByteArray value;
 };
 
-JceHead readHead(const utils::ByteStream &bs);
-template<JceType type>
-JceBody<type> readBody(const utils::ByteStream &bs);
+struct ListField : public JceField {
+  const JceType getType() override { return TYPE_LIST; }
+  ListType value;
+};
 
+struct MapField : public JceField {
+  const JceType getType() override { return TYPE_MAP; }
+  MapType value;
+};
+
+struct StructField : public JceField {
+  const JceType getType() override { return TYPE_STRUCT; }
+  JceBody value[256];
+};
+
+JceHead readHead(utils::ByteStream &bs);
+JceBody readBody(utils::ByteStream &bs);
+StructField readStruct(utils::ByteStream &bs);
+JceElement readElement(utils::ByteStream &bs);
+StructField decode(utils::ByteStream &bs);
+
+}
+
+namespace std{
+template<>
+struct hash<mirai::protocol::Jce::StructField>{
+  std::size_t operator()(const mirai::protocol::Jce::StructField &x){
+    // TODO: rewrite this hash function
+    auto list_size = sizeof(x);
+    using ResType = std::size_t;
+    ResType res = 0;
+    auto *ptr = (ResType *) (std::addressof(x));
+    ResType *const end = ptr + list_size / sizeof(ResType);
+    const uint32_t tail = list_size % sizeof(ResType);
+    const uint32_t shift = (sizeof(ResType) - sizeof(uint32_t)) << 3;
+    uint64_t seed = 131;
+    for (; ptr < end; ptr++)res = res * seed + (*ptr);
+    if (tail) {
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
+      res = res * seed + ((*ptr) & ((1ull << (tail << 3)) - 1));
+#elif BYTEORDER_ENDIAN == BYTEORDER_BIG_ENDIAN
+      res = res * seed+ ((*ptr) >> ((sizeof(uint64_t) - tail) << 3));
+#endif
+    }
+    return res;
+  }
+};
 }

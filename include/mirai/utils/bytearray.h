@@ -38,9 +38,11 @@ inline void writeUInt32BE(ByteArray &buf, std::size_t idx, uint32_t val) {
     val <<= 8;
   }
 }
+
+std::size_t ByteArrayHashFunc(const ByteArray &buf);
 }
 
-namespace mirai{
+namespace mirai {
 // overload operator <<
 utils::ByteStream &operator<<(utils::ByteStream &bs, const std::string &a);
 utils::ByteStream &operator<<(utils::ByteStream &bs, const char *c);
@@ -63,6 +65,15 @@ utils::ByteStream &operator>>(utils::ByteStream &bs, uint64_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int16_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int32_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int64_t &a);
+}
+
+namespace std {
+template<>
+struct hash<mirai::utils::ByteArray> {
+  std::size_t operator()(const mirai::utils::ByteArray &buf) {
+    return mirai::utils::ByteArrayHashFunc(buf);
+  }
+};
 }
 
 #endif //MIRAI_INCLUDE_MIRAI_UTILS_BYTEARRAY_H_

@@ -1,5 +1,8 @@
 #include "mirai/utils/bytearray.h"
 
+#include "mirai/defs/macros.h"
+#include "mirai/utils/encode.h"
+
 #include <sstream>
 
 namespace mirai {
@@ -23,17 +26,29 @@ ByteStream &operator<<(ByteStream &bs, const byte &a) {
   return bs;
 }
 ByteStream &operator<<(ByteStream &bs, const uint16_t &a) {
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
   auto x = reverseU16(a);
+#elif BYTEORDER_ENDIAN == BYTEORDER_BIG_ENDIAN
+  auto x = a;
+#endif
   bs.write(reinterpret_cast<const mirai::byte *>(&x), 2);
   return bs;
 }
 ByteStream &operator<<(ByteStream &bs, const uint32_t &a) {
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
   auto x = reverseU32(a);
+#elif BYTEORDER_ENDIAN == BYTEORDER_BIG_ENDIAN
+  auto x = a;
+#endif
   bs.write(reinterpret_cast<const mirai::byte *>(&x), 4);
   return bs;
 }
 ByteStream &operator<<(ByteStream &bs, const uint64_t &a) {
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
   auto x = reverseU64(a);
+#elif BYTEORDER_ENDIAN == BYTEORDER_BIG_ENDIAN
+  auto x = a;
+#endif
   bs.write(reinterpret_cast<const mirai::byte *>(&x), 8);
   return bs;
 }
@@ -60,7 +75,8 @@ ByteStream &operator>>(ByteStream &bs, byte &a) {
   return bs;
 }
 ByteStream &operator>>(ByteStream &bs, uint16_t &a) {
-  a = static_cast<uint16_t>((static_cast<uint16_t>(bs.get()) << 4) | uint16_t(bs.get()));
+  a = (static_cast<uint16_t>(bs.get()) << 4) |
+      static_cast<uint16_t>(bs.get());
   return bs;
 }
 ByteStream &operator>>(ByteStream &bs, uint32_t &a) {
@@ -91,4 +107,9 @@ ByteStream &operator>>(ByteStream &bs, int64_t &a) {
   return bs >> (uint64_t &) (a);
 }
 
+}
+
+std::size_t ByteArrayHashFunc(const mirai::utils::ByteArray &buf){
+  // TODO: rewrite ByteArrayHashFunc
+  return std::hash<std::string>{}(mirai::utils::base64Encode(buf));
 }

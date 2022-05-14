@@ -3,6 +3,7 @@
 #include "mirai/utils/bytearray.h"
 
 #include <string>
+#include <iostream>
 
 using mirai::utils::ByteStream;
 using mirai::operator<<;
@@ -40,4 +41,18 @@ TEST(MiraiUtilTest, ByteStreamInputTest1) {
   mirai::byte res;
   bs >> res;
   ASSERT_EQ(res, 0x41);
+}
+
+TEST(MiraiUtilTest, ByteStreamTest1) {
+  ByteStream bs;
+//  mirai::utils::ByteArray inp = mirai::utils::toByteArray("ABCD");
+//  bs.str(inp);
+  bs << "ABCD";
+  mirai::byte res1;
+  bs >> (mirai::byte &) (res1);
+  ASSERT_EQ(res1, 0x41);
+  bs << "EFG";
+  uint32_t res2;
+  bs >> res2;
+  ASSERT_EQ(res2, 0x42434445);
 }
