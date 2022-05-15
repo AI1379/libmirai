@@ -41,6 +41,8 @@ inline void writeUInt32BE(ByteArray &buf, std::size_t idx, uint32_t val) {
 
 ByteArray readLen(ByteStream &bs, std::size_t len);
 
+std::size_t readableLen(ByteStream &bs);
+
 std::size_t ByteArrayHashFunc(const ByteArray &buf);
 }
 

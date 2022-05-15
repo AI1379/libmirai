@@ -127,4 +127,24 @@ JceBody readBody(utils::ByteStream &bs, JceType type) {
   }
 }
 
+JceBody readStruct(utils::ByteStream &bs) {
+  StructFieldPtr ptr = std::make_shared<StructField>();
+  while (utils::readableLen(bs)) {
+    auto res = readElement(bs);
+    if (res.body == kStructEndSymbol) {
+      return JceBody(ptr);
+    } else {
+      ptr->value[res.head.tag] = res.body;
+    }
+  }
+  throw std::logic_error("Invalid JCE Package");
+}
+
+JceElement readElement(utils::ByteStream &bs) {
+  JceElement res;
+  res.head = readHead(bs);
+  res.body = readBody(bs, res.head.type);
+  return res;
+}
+
 }

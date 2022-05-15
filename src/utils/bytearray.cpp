@@ -116,6 +116,15 @@ ByteArray utils::readLen(ByteStream &bs, std::size_t len) {
   return ByteArray(buf, len);
 }
 
+// TODO: rewrite readableLen in a safer approach
+std::size_t utils::readableLen(ByteStream &bs) {
+  auto x = bs.tellg();
+  bs.seekg(0, std::ios::end);
+  auto len = bs.tellg() - x;
+  bs.seekg(x, std::ios::beg);
+  return len;
+}
+
 std::size_t utils::ByteArrayHashFunc(const mirai::utils::ByteArray &buf) {
   // TODO: rewrite ByteArrayHashFunc
   return std::hash<std::string>{}(mirai::utils::base64Encode(buf));
