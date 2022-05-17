@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <string>
+#include <sstream>
 
 namespace mirai::utils {
 // TODO: 写一个自有的ByteArray类

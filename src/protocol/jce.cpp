@@ -1,5 +1,7 @@
 #include "mirai/protocol/jce.h"
 
+#include "mirai/utils/encode.h"
+
 namespace mirai::protocol::Jce {
 
 bool operator==(const JceBody &lhs, const JceBody &rhs) {
@@ -145,6 +147,90 @@ JceElement readElement(utils::ByteStream &bs) {
   res.head = readHead(bs);
   res.body = readBody(bs, res.head.type);
   return res;
+}
+
+JceBody decode(utils::ByteArray &buf) {
+  utils::ByteStream bs;
+  bs.str(buf);
+  StructFieldPtr res_ptr = std::make_shared<StructField>();
+  JceElement elem;
+  while (utils::readableLen(bs)) {
+    elem = readElement(bs);
+    res_ptr->value[elem.head.tag] = elem.body;
+  }
+  return JceBody(res_ptr);
+}
+
+std::string jceBodyToString(const JceBody &pack) {
+  std::ostringstream oss;
+  switch (pack.getType()) {
+    case TYPE_INT8: {
+      oss << pack.getInt8FieldPtr()->value;
+      return oss.str();
+    }
+    case TYPE_INT16: {
+      oss << pack.getInt16FieldPtr()->value;
+      return oss.str();
+    }
+    case TYPE_INT32: {
+      oss << pack.getInt32FieldPtr()->value;
+      return oss.str();
+    }
+    case TYPE_INT64: {
+      oss << pack.getInt64FieldPtr()->value;
+      return oss.str();
+    }
+    case TYPE_FLOAT: {
+      oss << pack.getFloatFieldPtr()->value;
+      return oss.str();
+    }
+    case TYPE_DOUBLE: {
+      oss << pack.getDoubleFieldPtr()->value;
+      return oss.str();
+    }
+    case TYPE_STRING1:
+    case TYPE_STRING4: {
+      oss << "\"" << pack.getStringFieldPtr()->value << "\"";
+      return oss.str();
+    }
+    case TYPE_MAP: {
+      oss << "{";
+      for (const auto &x : pack.getMapFieldPtr()->value) {
+        oss << jceBodyToString(x.first) << ":" << jceBodyToString(x.second) << ",";
+      }
+      oss << "}";
+      return oss.str();
+    }
+    case TYPE_LIST: {
+      oss << "[";
+      for (const auto &x : pack.getListFieldPtr()->value) {
+        oss << jceBodyToString(x) << ",";
+      }
+      oss << "]";
+      return oss.str();
+    }
+    case TYPE_STRUCT: {
+      oss << "{";
+      auto raw_struct = pack.getStructFieldPtr()->value;
+      for (std::size_t idx = 0; idx < 256; idx++) {
+        if (raw_struct[idx].getRawPtr() != nullptr) {
+          oss << "\"" << idx << "\":" << jceBodyToString(raw_struct[idx]) << ",";
+        }
+      }
+      oss << "}";
+      return oss.str();
+    }
+    case TYPE_STRUCT_END: {
+      return "\"JCE_STRUCT_END_SYMBOL\"";
+    }
+    case TYPE_ZERO: {
+      return "0";
+    }
+    case TYPE_SIMPLE_LIST: {
+      oss << "base64://" << utils::base64Encode(pack.getSimpleListFieldPtr()->value);
+      return oss.str();
+    }
+  }
 }
 
 }

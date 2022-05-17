@@ -74,7 +74,7 @@ using StructFieldPtr = std::shared_ptr<StructField>;
 // 封装了一个类保存JceBody
 class JceBody {
  public:
-  JceBody() = default;
+  JceBody() { this->field_ptr_ = nullptr; };
   JceBody(const JceBody &rhs) { this->field_ptr_ = rhs.field_ptr_; }
   explicit JceBody(FieldPtr field_ptr) : field_ptr_(std::move(field_ptr)) {}
   const JceType getType() const { return this->field_ptr_->getType(); }
@@ -91,6 +91,7 @@ class JceBody {
   ListFieldPtr getListFieldPtr() const { return std::static_pointer_cast<ListField>(this->field_ptr_); }
   MapFieldPtr getMapFieldPtr() const { return std::static_pointer_cast<MapField>(this->field_ptr_); }
   StructFieldPtr getStructFieldPtr() const { return std::static_pointer_cast<StructField>(this->field_ptr_); }
+  FieldPtr getRawPtr() const { return this->field_ptr_; }
 
  private:
   FieldPtr field_ptr_;
@@ -298,8 +299,17 @@ JceHead readHead(utils::ByteStream &bs);
 JceBody readBody(utils::ByteStream &bs, JceType type);
 JceBody readStruct(utils::ByteStream &bs);
 JceElement readElement(utils::ByteStream &bs);
-StructField decode(utils::ByteStream &bs);
+JceBody decode(utils::ByteArray &buf);
 
+// Convert a JceBody to a JSON-style string
+std::string jceBodyToString(const JceBody &pack);
+
+}
+
+namespace mirai {
+inline std::ostream &operator<<(std::ostream &os, const protocol::Jce::JceBody &pack) {
+  return os << protocol::Jce::jceBodyToString(pack);
+}
 }
 
 namespace std {
