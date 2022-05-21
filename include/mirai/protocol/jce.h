@@ -25,14 +25,12 @@ enum JceType {
   TYPE_SIMPLE_LIST = 13,
 };
 
-enum JceTag {
-  TAG_MAP_K = 0,
-  TAG_MAP_V = 1,
-  TAG_LIST_E = 0,
-  TAG_BYTES = 0,
-  TAG_LENGTH = 0,
-  TAG_STRUCT_END = 0,
-};
+constexpr std::uint8_t kMapKeyTag = 0;
+constexpr std::uint8_t kMapValueTag = 1;
+constexpr std::uint8_t kListElementTag = 0;
+constexpr std::uint8_t kBytesTag = 0;
+constexpr std::uint8_t kLengthTag = 0;
+constexpr std::uint8_t kStructEndTag = 0;
 
 struct JceHead {
   JceType type;
@@ -271,6 +269,13 @@ inline JceBody createInt64Field(std::int64_t x) {
   return JceBody(ptr);
 }
 
+inline JceBody createIntField(std::uint64_t x) {
+  if (0 <= x && x < (1 << 8))return createInt8Field(static_cast<std::int8_t>(x));
+  else if ((1 << 8) <= x && x < (1 << 16))return createInt16Field(static_cast<std::int16_t>(x));
+  else if ((1ll << 16) <= x && x < (1ll << 32))return createInt32Field(static_cast<std::int32_t>(x));
+  else return createInt64Field(static_cast<std::int64_t>(x));
+}
+
 inline JceBody createFloatField(float x) {
   auto ptr = std::make_shared<FloatField>();
   ptr->value = x;
@@ -300,6 +305,8 @@ JceBody readBody(utils::ByteStream &bs, JceType type);
 JceBody readStruct(utils::ByteStream &bs);
 JceElement readElement(utils::ByteStream &bs);
 JceBody decode(utils::ByteArray &buf);
+
+utils::ByteArray createElement(const std::uint8_t &tag, const JceBody &pack);
 
 // Convert a JceBody to a JSON-style string
 std::string jceBodyToString(const JceBody &pack);

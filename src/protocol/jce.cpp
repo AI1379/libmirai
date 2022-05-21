@@ -247,4 +247,81 @@ std::string jceBodyToString(const JceBody &pack) {
   }
 }
 
+utils::ByteArray createElement(const std::uint8_t &tag, const JceBody &pack) {
+  utils::ByteStream bs;
+  if (tag < 15) bs << (mirai::byte) (static_cast<uint8_t>(pack.getType()) | (tag << 4));
+  else bs << (mirai::byte) (static_cast<uint8_t>(pack.getType()) | 0xf0) << (mirai::byte) (tag);
+  switch (pack.getType()) {
+    case TYPE_INT8: {
+      bs << (pack.getInt8FieldPtr()->value);
+      break;
+    }
+    case TYPE_INT16: {
+      bs << (pack.getInt16FieldPtr()->value);
+      break;
+    }
+    case TYPE_INT32: {
+      bs << (pack.getInt32FieldPtr()->value);
+      break;
+    }
+    case TYPE_INT64: {
+      bs << (pack.getInt64FieldPtr()->value);
+      break;
+    }
+    case TYPE_FLOAT: {
+      bs << utils::ByteArray(reinterpret_cast<mirai::byte *>(&(pack.getFloatFieldPtr()->value)), 4);
+      break;
+    }
+    case TYPE_DOUBLE: {
+      bs << utils::ByteArray(reinterpret_cast<mirai::byte *>(&(pack.getDoubleFieldPtr()->value)), 8);
+      break;
+    }
+    case TYPE_STRING1:
+    case TYPE_STRING4: {
+      auto str = pack.getStringFieldPtr()->value;
+      if (str.length() < 256) {
+        bs << (std::uint8_t) (str.length()) << str;
+      } else {
+        bs.seekp(0, std::ios::beg);
+        if (tag < 15) bs << (mirai::byte) (static_cast<uint8_t>(TYPE_STRING4) | (tag << 4));
+        else bs << (mirai::byte) (static_cast<uint8_t>(TYPE_STRING4) | 0xf0) << (mirai::byte) (tag);
+        bs << (std::uint64_t) (str.length()) << str;
+      }
+      break;
+    }
+    case TYPE_MAP: {
+      bs << createElement(kLengthTag, createIntField(pack.getMapFieldPtr()->value.size()));
+      for (auto &x : pack.getMapFieldPtr()->value) {
+        bs << createElement(kMapKeyTag, x.first) << createElement(kMapValueTag, x.second);
+      }
+      break;
+    }
+    case TYPE_LIST: {
+      bs << createElement(kLengthTag, createIntField(pack.getListFieldPtr()->value.size()));
+      for (auto &x : pack.getListFieldPtr()->value) {
+        bs << createElement(kListElementTag, x);
+      }
+      break;
+    }
+    case TYPE_STRUCT: {
+      auto raw_struct = pack.getStructFieldPtr()->value;
+      for (std::size_t idx = 0; idx < 256; idx++) {
+        if (raw_struct[idx].getRawPtr() != nullptr) {
+          bs << createElement(idx, raw_struct[idx]);
+        }
+      }
+      bs << createElement(kStructEndTag, kStructEndSymbol);
+      break;
+    }
+    case TYPE_STRUCT_END:
+    case TYPE_ZERO: break;
+    case TYPE_SIMPLE_LIST: {
+      bs << (mirai::byte) (kBytesTag)
+         << createElement(kLengthTag, createIntField(pack.getSimpleListFieldPtr()->value.length()))
+         << pack.getSimpleListFieldPtr()->value;
+    }
+  }
+  return bs.str();
+}
+
 }
