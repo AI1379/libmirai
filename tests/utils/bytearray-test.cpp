@@ -68,3 +68,13 @@ TEST(MiraiUtilTest, ByteStreamTest1) {
   bs >> res2;
   ASSERT_EQ(res2, 0x42434445);
 }
+
+TEST(MiraiUtilTest, ByteStreamTest2) {
+  ByteStream bs;
+  bs << "ABCD";
+  ASSERT_EQ(mirai::utils::readableLen(bs), 4);
+  mirai::byte x;
+  bs >> (mirai::byte &) (x);
+  ASSERT_EQ(x, (uint8_t) ('A'));
+  ASSERT_EQ(mirai::utils::readableLen(bs), 3);
+}

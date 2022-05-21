@@ -75,26 +75,38 @@ ByteStream &operator>>(ByteStream &bs, byte &a) {
   return bs;
 }
 ByteStream &operator>>(ByteStream &bs, uint16_t &a) {
-  a = (static_cast<uint16_t>(bs.get()) << 4) |
-      static_cast<uint16_t>(bs.get());
+  bs.read(reinterpret_cast<ByteStream::char_type *>(&a), 2);
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
+  a = reverseU16(a);
+#endif
+//  a = (static_cast<uint16_t>(bs.get()) << 4) |
+//      static_cast<uint16_t>(bs.get());
   return bs;
 }
 ByteStream &operator>>(ByteStream &bs, uint32_t &a) {
-  a = (static_cast<uint32_t>(bs.get()) << 24) |
-      (static_cast<uint32_t>(bs.get()) << 16) |
-      (static_cast<uint32_t>(bs.get()) << 8) |
-      (static_cast<uint32_t>(bs.get()));
+  bs.read(reinterpret_cast<ByteStream::char_type *>(&a), 4);
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
+  a = reverseU32(a);
+#endif
+//  a = (static_cast<uint32_t>(bs.get()) << 24) |
+//      (static_cast<uint32_t>(bs.get()) << 16) |
+//      (static_cast<uint32_t>(bs.get()) << 8) |
+//      (static_cast<uint32_t>(bs.get()));
   return bs;
 }
 ByteStream &operator>>(ByteStream &bs, uint64_t &a) {
-  a = (static_cast<uint64_t>(bs.get()) << 56) |
-      (static_cast<uint64_t>(bs.get()) << 48) |
-      (static_cast<uint64_t>(bs.get()) << 40) |
-      (static_cast<uint64_t>(bs.get()) << 32) |
-      (static_cast<uint64_t>(bs.get()) << 24) |
-      (static_cast<uint64_t>(bs.get()) << 16) |
-      (static_cast<uint64_t>(bs.get()) << 8) |
-      (static_cast<uint64_t>(bs.get()));
+  bs.read(reinterpret_cast<ByteStream::char_type *>(&a), 8);
+#if BYTEORDER_ENDIAN == BYTEORDER_LITTLE_ENDIAN
+  a = reverseU64(a);
+#endif
+//  a = (static_cast<uint64_t>(bs.get()) << 56) |
+//      (static_cast<uint64_t>(bs.get()) << 48) |
+//      (static_cast<uint64_t>(bs.get()) << 40) |
+//      (static_cast<uint64_t>(bs.get()) << 32) |
+//      (static_cast<uint64_t>(bs.get()) << 24) |
+//      (static_cast<uint64_t>(bs.get()) << 16) |
+//      (static_cast<uint64_t>(bs.get()) << 8) |
+//      (static_cast<uint64_t>(bs.get()));
   return bs;
 }
 ByteStream &operator>>(ByteStream &bs, int8_t &a) {
@@ -113,7 +125,9 @@ ByteStream &operator>>(ByteStream &bs, int64_t &a) {
 ByteArray utils::readLen(ByteStream &bs, std::size_t len) {
   byte *buf = new byte[len];
   bs.read(buf, len);
-  return ByteArray(buf, len);
+  ByteArray res(buf, len);
+  delete[] buf;
+  return res;
 }
 
 // TODO: rewrite readableLen in a safer approach

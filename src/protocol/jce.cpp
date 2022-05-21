@@ -34,7 +34,7 @@ std::size_t JceBodyHashFunc(const JceBody &x) {
     case TYPE_INT64:return hash<decltype(x.getInt64FieldPtr()->value)>{}(x.getInt64FieldPtr()->value);
     case TYPE_FLOAT:return hash<decltype(x.getFloatFieldPtr()->value)>{}(x.getFloatFieldPtr()->value);
     case TYPE_DOUBLE:return hash<decltype(x.getDoubleFieldPtr()->value)>{}(x.getDoubleFieldPtr()->value);
-    case TYPE_STRING1:
+    case TYPE_STRING1:return hash<decltype(x.getStringFieldPtr()->value)>{}(x.getStringFieldPtr()->value);
     case TYPE_STRING4:return hash<decltype(x.getStringFieldPtr()->value)>{}(x.getStringFieldPtr()->value);
     case TYPE_MAP:return hash<decltype(x.getMapFieldPtr()->value)>{}(x.getMapFieldPtr()->value);
     case TYPE_LIST:return hash<decltype(x.getListFieldPtr()->value)>{}(x.getListFieldPtr()->value);
@@ -57,9 +57,21 @@ JceHead readHead(utils::ByteStream &bs) {
   return res;
 }
 
+static std::size_t readJceLen(utils::ByteStream &bs) {
+  auto x = readElement(bs).body;
+  switch (x.getType()) {
+    case TYPE_ZERO:return 0;
+    case TYPE_INT8:return static_cast<std::size_t>(x.getInt8FieldPtr()->value);
+    case TYPE_INT16:return static_cast<std::size_t>(x.getInt16FieldPtr()->value);
+    case TYPE_INT32:return static_cast<std::size_t>(x.getInt32FieldPtr()->value);
+    case TYPE_INT64:return static_cast<std::size_t>(x.getInt64FieldPtr()->value);
+    default:throw std::logic_error("Invalid length type");
+  }
+}
+
 JceBody readBody(utils::ByteStream &bs, JceType type) {
-  std::size_t len;
-  using mirai::operator>>;
+  std::size_t len = 0;
+//  using mirai::operator>>;
   switch (type) {
     case TYPE_ZERO:return createZeroField();
     case TYPE_INT8: {
@@ -92,28 +104,36 @@ JceBody readBody(utils::ByteStream &bs, JceType type) {
       bs >> (uint64_t &) (doubleRes);
       return createDoubleField(*((double *) (&doubleRes)));
     }
-    case TYPE_STRING1:
+    case TYPE_STRING1: {
+      bs >> (uint8_t &) (len);
+      return createStringField(utils::toString(utils::readLen(bs, len)));
+    }
     case TYPE_STRING4: {
-      if (type == TYPE_STRING1)bs >> (uint8_t &) (len);
-      else bs >> (uint32_t &) (len);
+      bs >> (uint32_t &) (len);
       return createStringField(utils::toString(utils::readLen(bs, len)));
     }
     case TYPE_SIMPLE_LIST: {
       readHead(bs);
-      // TODO: confirm the size of SimpleList
-      len = readElement(bs).body.getInt32FieldPtr()->value;
+      len = readJceLen(bs);
+//      len = readElement(bs).body.getInt8FieldPtr()->value;
       return createSimpleListField(utils::readLen(bs, len));
     }
     case TYPE_MAP: {
-      len = readElement(bs).body.getInt32FieldPtr()->value;
+//      len = readElement(bs).body.getInt8FieldPtr()->value;
+      len = readJceLen(bs);
       MapFieldPtr res = std::make_shared<MapField>();
+      JceBody x, y;
       while (len--) {
-        res->value[readElement(bs).body] = readElement(bs).body;
+        x = readElement(bs).body;
+        y = readElement(bs).body;
+        res->value.insert(std::make_pair(x, y));
+//        res->value[readElement(bs).body] = readElement(bs).body;
       }
       return JceBody(res);
     }
     case TYPE_LIST: {
-      len = readElement(bs).body.getInt32FieldPtr()->value;
+      len = readJceLen(bs);
+//      len = readElement(bs).body.getInt32FieldPtr()->value;
       ListFieldPtr res = std::make_shared<ListField>();
       while (len--) {
         res->value.push_back(readElement(bs).body);
@@ -165,28 +185,22 @@ std::string jceBodyToString(const JceBody &pack) {
   std::ostringstream oss;
   switch (pack.getType()) {
     case TYPE_INT8: {
-      oss << pack.getInt8FieldPtr()->value;
-      return oss.str();
+      return std::to_string(pack.getInt8FieldPtr()->value);
     }
     case TYPE_INT16: {
-      oss << pack.getInt16FieldPtr()->value;
-      return oss.str();
+      return std::to_string(pack.getInt16FieldPtr()->value);
     }
     case TYPE_INT32: {
-      oss << pack.getInt32FieldPtr()->value;
-      return oss.str();
+      return std::to_string(pack.getInt32FieldPtr()->value);
     }
     case TYPE_INT64: {
-      oss << pack.getInt64FieldPtr()->value;
-      return oss.str();
+      return std::to_string(pack.getInt64FieldPtr()->value);
     }
     case TYPE_FLOAT: {
-      oss << pack.getFloatFieldPtr()->value;
-      return oss.str();
+      return std::to_string(pack.getFloatFieldPtr()->value);
     }
     case TYPE_DOUBLE: {
-      oss << pack.getDoubleFieldPtr()->value;
-      return oss.str();
+      return std::to_string(pack.getDoubleFieldPtr()->value);
     }
     case TYPE_STRING1:
     case TYPE_STRING4: {
@@ -221,7 +235,7 @@ std::string jceBodyToString(const JceBody &pack) {
       return oss.str();
     }
     case TYPE_STRUCT_END: {
-      return "\"JCE_STRUCT_END_SYMBOL\"";
+      return "JCE_STRUCT_END_SYMBOL";
     }
     case TYPE_ZERO: {
       return "0";

@@ -243,53 +243,53 @@ struct StructEndField : public JceField {
 
 static const auto kStructEndSymbol = JceBody(std::make_shared<StructEndField>());
 
-JceBody createZeroField() {
+inline JceBody createZeroField() {
   return JceBody(std::static_pointer_cast<JceField>(std::make_shared<ZeroField>()));
 }
 
-JceBody createInt8Field(std::int8_t x) {
+inline JceBody createInt8Field(std::int8_t x) {
   auto ptr = std::make_shared<Int8Field>();
   ptr->value = x;
   return JceBody(ptr);
 }
 
-JceBody createInt16Field(std::int16_t x) {
+inline JceBody createInt16Field(std::int16_t x) {
   auto ptr = std::make_shared<Int16Field>();
   ptr->value = x;
   return JceBody(ptr);
 }
 
-JceBody createInt32Field(std::int32_t x) {
+inline JceBody createInt32Field(std::int32_t x) {
   auto ptr = std::make_shared<Int32Field>();
   ptr->value = x;
   return JceBody(ptr);
 }
 
-JceBody createInt64Field(std::int64_t x) {
+inline JceBody createInt64Field(std::int64_t x) {
   auto ptr = std::make_shared<Int64Field>();
   ptr->value = x;
   return JceBody(ptr);
 }
 
-JceBody createFloatField(float x) {
+inline JceBody createFloatField(float x) {
   auto ptr = std::make_shared<FloatField>();
   ptr->value = x;
   return JceBody(ptr);
 }
 
-JceBody createDoubleField(double x) {
+inline JceBody createDoubleField(double x) {
   auto ptr = std::make_shared<DoubleField>();
   ptr->value = x;
   return JceBody(ptr);
 }
 
-JceBody createStringField(const std::string &str) {
+inline JceBody createStringField(const std::string &str) {
   auto ptr = std::make_shared<StringField>();
   ptr->value = str;
   return JceBody(ptr);
 }
 
-JceBody createSimpleListField(const utils::ByteArray &buf) {
+inline JceBody createSimpleListField(const utils::ByteArray &buf) {
   auto ptr = std::make_shared<SimpleListField>();
   ptr->value = buf;
   return JceBody(ptr);
