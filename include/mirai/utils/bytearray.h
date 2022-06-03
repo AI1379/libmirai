@@ -73,6 +73,15 @@ utils::ByteStream &operator>>(utils::ByteStream &bs, int32_t &a);
 utils::ByteStream &operator>>(utils::ByteStream &bs, int64_t &a);
 }
 
+namespace mirai::utils {
+template<typename ...Ts>
+inline utils::ByteArray concat(Ts... args) {
+  utils::ByteStream bs;
+  (bs << ... <<args);
+  return bs.str();
+}
+}
+
 namespace std {
 template<>
 struct hash<mirai::utils::ByteArray> {

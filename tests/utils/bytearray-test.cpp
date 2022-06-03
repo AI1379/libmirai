@@ -78,3 +78,24 @@ TEST(MiraiUtilTest, ByteStreamTest2) {
   ASSERT_EQ(x, (uint8_t) ('A'));
   ASSERT_EQ(mirai::utils::readableLen(bs), 3);
 }
+
+TEST(MiraiUtilTest, ConcatTest1) {
+  auto res = mirai::utils::concat("One for the money, two for the show. ",
+                                  "I never was ready, so I watched you go.");
+  mirai::utils::ByteArray exp_res =
+      mirai::utils::toByteArray("One for the money, two for the show. I never was ready, so I watched you go.");
+  ASSERT_EQ(res, exp_res);
+}
+
+TEST(MiraiUtilTest, ConcatTest2) {
+  auto res = mirai::utils::concat("You were drivin' the getaway car\n",
+                                  "We were flyin', but we'd never get far\n",
+                                  "Don't pretend it's such a mystery\n",
+                                  "Think about the place where you first met me");
+  mirai::utils::ByteArray exp_res = mirai::utils::toByteArray(
+      R"(You were drivin' the getaway car
+We were flyin', but we'd never get far
+Don't pretend it's such a mystery
+Think about the place where you first met me)");
+  ASSERT_EQ(res,exp_res);
+}

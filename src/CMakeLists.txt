@@ -18,7 +18,7 @@ target_include_directories(asio INTERFACE ${ASIO_SOURCE_DIR}/asio/include)
 target_compile_definitions(asio INTERFACE ASIO_STANDALONE ASIO_NO_DEPRECATED)
 target_link_libraries(asio INTERFACE Threads::Threads)
 
-if(WIN32)
+if (WIN32)
     # macro see @ https://stackoverflow.com/a/40217291/1746503
     macro(get_win32_winnt version)
         if (CMAKE_SYSTEM_VERSION)
@@ -32,13 +32,13 @@ if(WIN32)
             string(REPLACE "." "" ver ${ver})
             string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
             set(${version} "0x${ver}")
-        endif()
+        endif ()
     endmacro()
 
-    if(NOT DEFINED _WIN32_WINNT)
+    if (NOT DEFINED _WIN32_WINNT)
         get_win32_winnt(ver)
         set(_WIN32_WINNT ${ver})
-    endif()
+    endif ()
 
     message(STATUS "Set _WIN32_WINNET=${_WIN32_WINNT}")
 
@@ -47,7 +47,7 @@ if(WIN32)
             _WIN32_WINNT=${_WIN32_WINNT}
             WIN32_LEAN_AND_MEAN
             )
-endif()
+endif ()
 
 include_directories(${ASIO_SOURCE_DIR}/asio/include)
 
@@ -58,3 +58,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 add_library(mirai ${MIRAI_SOURCE_FILES})
 
 target_link_libraries(mirai asio OpenSSL::Crypto)
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    target_link_libraries(mirai ws2_32)
+endif ()

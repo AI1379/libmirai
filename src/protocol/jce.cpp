@@ -6,6 +6,7 @@ namespace mirai::protocol::Jce {
 
 bool operator==(const JceBody &lhs, const JceBody &rhs) {
   if (lhs.getType() != rhs.getType()) return false;
+  if (lhs.getRawPtr() == rhs.getRawPtr() && lhs.getRawPtr() == nullptr)return true;
   switch (lhs.getType()) {
     case TYPE_INT8:return (lhs.getInt8FieldPtr()->value == rhs.getInt8FieldPtr()->value);
     case TYPE_INT16:return (lhs.getInt16FieldPtr()->value == rhs.getInt16FieldPtr()->value);
@@ -15,11 +16,35 @@ bool operator==(const JceBody &lhs, const JceBody &rhs) {
     case TYPE_DOUBLE:return (lhs.getDoubleFieldPtr()->value == rhs.getDoubleFieldPtr()->value);
     case TYPE_STRING1:
     case TYPE_STRING4:return (lhs.getStringFieldPtr()->value == rhs.getStringFieldPtr()->value);
-      // TODO: complete comparison of Map, List, SimpleList and Struct
-    case TYPE_MAP:
-    case TYPE_LIST:
-    case TYPE_STRUCT:
-    case TYPE_SIMPLE_LIST:return true;
+      // TODO: complete comparison of Map, List and Struct
+    case TYPE_MAP: {
+      auto x = lhs.getMapFieldPtr()->value;
+      auto y = rhs.getMapFieldPtr()->value;
+      return x == y;
+    }
+    case TYPE_LIST: {
+      return lhs.getListFieldPtr()->value == rhs.getListFieldPtr()->value;
+    }
+    case TYPE_STRUCT: {
+      auto x = lhs.getStructFieldPtr()->value;
+      auto y = rhs.getStructFieldPtr()->value;
+      for (std::size_t idx = 0; idx < 256; idx++) {
+        if (x[idx] != y[idx])return false;
+      }
+      return true;
+    }
+    case TYPE_SIMPLE_LIST: {
+      return lhs.getSimpleListFieldPtr()->value == rhs.getSimpleListFieldPtr()->value;
+//      if (lhs.getSimpleListFieldPtr()->value.length() != rhs.getSimpleListFieldPtr()->value.length()) {
+//        return false;
+//      }
+//      auto x = lhs.getSimpleListFieldPtr()->value;
+//      auto y = rhs.getSimpleListFieldPtr()->value;
+//      for (auto itx = x.begin(), ity = y.end(); itx != x.end() && ity != y.end(); itx++, ity++) {
+//        if ((*itx) != (*ity))return false;
+//      }
+//      return true;
+    }
     case TYPE_STRUCT_END:throw std::runtime_error("Invalid JCE Field");
     case TYPE_ZERO:return true;
   }
