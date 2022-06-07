@@ -12,7 +12,7 @@
 #include <string>
 #include <exception>
 
-namespace mirai::crypto {
+namespace mirai::crypto::tea {
 
 using std::uint32_t;
 

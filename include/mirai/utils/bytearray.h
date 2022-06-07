@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <sstream>
 
 namespace mirai::utils {
@@ -23,6 +24,10 @@ inline ByteArray toByteArray(const std::string &str) {
 
 inline std::string toString(const ByteArray &buf) {
   return std::string((char *) (buf.data()), buf.size());
+}
+
+inline ByteArrayView toByteArrayView(const std::string_view &sv) {
+  return ByteArrayView(reinterpret_cast<const mirai::byte *>(sv.data()), sv.size());
 }
 
 inline uint32_t readUInt32BE(const ByteArray &buf, std::size_t idx) {
@@ -61,6 +66,7 @@ utils::ByteStream &operator<<(utils::ByteStream &bs, const int16_t &a);
 utils::ByteStream &operator<<(utils::ByteStream &bs, const int32_t &a);
 utils::ByteStream &operator<<(utils::ByteStream &bs, const int64_t &a);
 utils::ByteStream &operator<<(utils::ByteStream &bs, const utils::ByteArray &buf);
+utils::ByteStream &operator<<(utils::ByteStream &bs, const utils::ByteArrayView &bv);
 
 // overload operator >>
 utils::ByteStream &operator>>(utils::ByteStream &bs, byte &a);
