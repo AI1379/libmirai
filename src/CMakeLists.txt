@@ -55,7 +55,14 @@ include_directories(${ASIO_SOURCE_DIR}/asio/include)
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-add_library(mirai ${MIRAI_SOURCE_FILES})
+# === Add Protobuf ===
+find_package(Protobuf REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIR})
+set(MIRAI_PROTOBUF_SOURCE ${MIRAI_PROTOBUF_DIR}/data.proto)
+set(MIRAI_PROTOBUF_CPP_SOURCE ${MIRAI_PROTOBUF_DIR}/data.pb.cc)
+include_directories(${MIRAI_PROTOBUF_DIR})
+
+add_library(mirai ${MIRAI_SOURCE_FILES} ${MIRAI_PROTOBUF_CPP_SOURCE})
 
 target_link_libraries(mirai asio OpenSSL::Crypto)
 

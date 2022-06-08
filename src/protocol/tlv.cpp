@@ -7,6 +7,8 @@
 #include "mirai/crypto/hash.h"
 #include "mirai/crypto/tea.h"
 
+#include "data.pb.h"
+
 namespace mirai::protocol::TLV {
 
 using namespace mirai::utils;
