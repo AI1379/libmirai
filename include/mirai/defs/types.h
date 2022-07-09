@@ -23,13 +23,13 @@ using int16 = std::int16_t;
 using int32 = std::int32_t;
 using int64 = std::int64_t;
 
-mirai::byte operator ""_byte(std::uint64_t val) { return static_cast<mirai::byte>(val); }
-std::uint16_t operator ""_u16(std::uint64_t val) { return static_cast<std::uint16_t>(val); }
-std::uint32_t operator ""_u32(std::uint64_t val) { return static_cast<std::uint32_t>(val); }
-std::uint64_t operator ""_u64(std::uint64_t val) { return static_cast<std::uint64_t>(val); }
-std::int16_t operator ""_s16(std::uint64_t val) { return static_cast<std::int16_t>(val); }
-std::int32_t operator ""_s32(std::uint64_t val) { return static_cast<std::int32_t>(val); }
-std::int64_t operator ""_s64(std::uint64_t val) { return static_cast<std::int64_t>(val); }
+inline mirai::byte operator ""_byte(std::uint64_t val) { return static_cast<mirai::byte>(val); }
+inline std::uint16_t operator ""_u16(std::uint64_t val) { return static_cast<std::uint16_t>(val); }
+inline std::uint32_t operator ""_u32(std::uint64_t val) { return static_cast<std::uint32_t>(val); }
+inline std::uint64_t operator ""_u64(std::uint64_t val) { return static_cast<std::uint64_t>(val); }
+inline std::int16_t operator ""_s16(std::uint64_t val) { return static_cast<std::int16_t>(val); }
+inline std::int32_t operator ""_s32(std::uint64_t val) { return static_cast<std::int32_t>(val); }
+inline std::int64_t operator ""_s64(std::uint64_t val) { return static_cast<std::int64_t>(val); }
 
 inline uint16_t reverseU16(uint16_t x) {
   return (x >> 8) | (x << 8);

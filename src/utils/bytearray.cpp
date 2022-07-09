@@ -8,7 +8,7 @@
 namespace mirai {
 using utils::ByteStream;
 using utils::ByteArray;
-using utils::ByteArrayView
+using utils::ByteArrayView;
 // overload operator <<
 ByteStream &operator<<(ByteStream &bs, const std::string &a) {
   for (std::string::value_type c : a) {

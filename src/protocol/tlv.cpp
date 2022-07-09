@@ -7,7 +7,7 @@
 #include "mirai/crypto/hash.h"
 #include "mirai/crypto/tea.h"
 
-#include "data.pb.h"
+#include "mirai/protocol/pb/data.pb.h"
 
 namespace mirai::protocol::TLV {
 
@@ -289,8 +289,8 @@ utils::ByteArray tlv525() {
 }
 utils::ByteArray tlv52D(const core::device::FullDevice &device) {
   // TODO: Protobuf
-  utils::ByteStream bs;
-  return bs.str();
+  utils::ByteArray device_pb = core::device::genFullDeviceProtobuf(device);
+  return concat(0x52d_u16, std::uint16_t(device_pb.length()), device_pb);
 }
 
 }

@@ -14,7 +14,7 @@ set(MIRAI_TESTS_FILES
         ${MIRAI_TESTS_DIR}/protocol/jce-test.cpp
         ${MIRAI_TESTS_DIR}/utils/bytearray-test.cpp
         ${MIRAI_TESTS_DIR}/core/device-test.cpp
-        ${MIRAI_TESTS_DIR}/core/network-test.cpp utils/signal-slot-test.cpp)
+        ${MIRAI_TESTS_DIR}/core/network-test.cpp utils/signal-slot-test.cpp utils/string-format-test.cpp)
 
 set(MIRAI_TESTS_FILES ${MIRAI_TESTS_FILES} PARENT_SCOPE)
 

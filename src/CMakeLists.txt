@@ -59,12 +59,12 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIR})
 set(MIRAI_PROTOBUF_SOURCE ${MIRAI_PROTOBUF_DIR}/data.proto)
-set(MIRAI_PROTOBUF_CPP_SOURCE ${MIRAI_PROTOBUF_DIR}/data.pb.cc)
+set(MIRAI_PROTOBUF_CPP_SOURCE ${MIRAI_PROTOBUF_DIR}/data.pb.cc ../include/mirai/utils/string-format.h)
 include_directories(${MIRAI_PROTOBUF_DIR})
 
 add_library(mirai ${MIRAI_SOURCE_FILES} ${MIRAI_PROTOBUF_CPP_SOURCE})
 
-target_link_libraries(mirai asio OpenSSL::Crypto)
+target_link_libraries(mirai asio OpenSSL::Crypto protobuf::libprotobuf)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     target_link_libraries(mirai ws2_32)

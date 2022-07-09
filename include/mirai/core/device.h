@@ -4,11 +4,14 @@
 
 #include "mirai/crypto/random.h"
 #include "mirai/crypto/hash.h"
+#include "mirai/utils/bytearray.h"
+
+#include "mirai/protocol/pb/data.pb.h"
 
 #include <string>
 
 namespace mirai::core::device {
-std::uint32_t calcSP(const std::string &imei) {
+inline std::uint32_t calcSP(const std::string &imei) {
   std::uint32_t sum = 0;
   for (std::size_t i = 0, j; i < imei.length(); i++) {
     if (i % 2 == 1) {
@@ -22,7 +25,7 @@ std::uint32_t calcSP(const std::string &imei) {
 }
 
 // TODO: 减少字符串处理
-std::string generateImei(std::uint32_t uin) {
+inline std::string generateImei(std::uint32_t uin) {
   std::stringstream ss;
   std::string uin_str = std::to_string(uin);
   if (uin % 2 == 1) ss << "86";
@@ -63,7 +66,7 @@ struct Apk {
   Protocol protocol = AndroidPhone;
 };
 
-Apk getApkInfo(Protocol protocol) {
+inline Apk getApkInfo(Protocol protocol) {
   Apk res;
   res.protocol = protocol;
   using utils::hexDecode;
@@ -147,21 +150,22 @@ struct ShortDevice {
 };
 struct FullDevice {
   std::string product, device, board, brand, model, wifi_ssid, bootloader, android_id, boot_id, proc_version,
-      mac_address, ip_address, imei, incremental,os_type;
-  struct VersionField{
-    std::uint32_t incremental;
+      mac_address, ip_address, imei, incremental, os_type, fingerprint;
+  struct VersionField {
+    utils::ByteArray incremental;
     std::string release;
     std::string codename;
     std::uint32_t sdk;
-  }version;
+  } version;
   std::string sim;
   std::string apn;
   std::string wifi_bssid;
   utils::ByteArray guid;
   utils::ByteArray imsi;
+  std::string baseband;
 };
 
-ShortDevice generateShortDevice(uint32_t uin) {
+inline ShortDevice generateShortDevice(uint32_t uin) {
   auto hash = crypto::MD5(utils::toByteArray(std::to_string(uin)));
   auto hex = utils::hexEncode(hash);
   ShortDevice res;
@@ -175,6 +179,22 @@ ShortDevice generateShortDevice(uint32_t uin) {
   res.bootloader = "U-boot";
 
   return res;
+}
+
+inline utils::ByteArray genFullDeviceProtobuf(const FullDevice &device) {
+  DeviceInfo device_pb;
+  device_pb.set_bootloader(device.bootloader);
+  device_pb.set_procversion(device.proc_version);
+  device_pb.set_codename(device.version.codename);
+  device_pb.set_incremental(utils::toString(device.version.incremental));
+  device_pb.set_fingerprint(device.fingerprint);
+  device_pb.set_bootid(device.boot_id);
+  device_pb.set_androidid(device.android_id);
+  device_pb.set_baseband(device.baseband);
+  device_pb.set_innerversion(utils::toString(device.version.incremental));
+  std::string res;
+  device_pb.SerializePartialToString(&res);
+  return utils::toByteArray(res);
 }
 
 }
